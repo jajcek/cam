@@ -14,9 +14,21 @@
 
     <LinearLayout
         android:id="@+id/container"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:gravity="center">
+        android:layout_width="68dp"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageButton
+            android:id="@+id/imageButton3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/pic"
+            android:cropToPadding="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ok" />
 
         <ImageButton
             android:id="@+id/imageButton1"

@@ -46,6 +46,7 @@ public class FullscreenActivity extends Activity {
         previewFrame.addView(preview);
 
         buttonsOrientationListener = new ButtonsOrientationListener(this);
+        buttonsOrientationListener.addView(findViewById(R.id.imageButton3));
         buttonsOrientationListener.addView(findViewById(R.id.imageButton1));
         buttonsOrientationListener.enable();
     }

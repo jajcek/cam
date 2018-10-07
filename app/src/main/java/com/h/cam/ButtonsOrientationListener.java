@@ -31,36 +31,34 @@ public class ButtonsOrientationListener extends OrientationEventListener {
 
     @Override
     public void onOrientationChanged(int orientation) {
-        for (View view : views) {
-            if (rotation == -1) {
-                setupOrientation(orientation, view);
-            } else {
-                rotate(orientation, view);
-            }
+        if (rotation == -1) {
+            setupOrientation(orientation);
+        } else {
+            rotate(orientation);
         }
     }
 
-    private void setupOrientation(int orientation, View view) {
+    private void setupOrientation(int orientation) {
         if (isPortrait(orientation)) {
-            rotateView(ROTATION_270, ROTATION_270, SETUP_DURATION, view);
+            rotateView(ROTATION_270, ROTATION_270, SETUP_DURATION);
         } else if (isReversePortrait(orientation)) {
-            rotateView(ROTATION_90, ROTATION_90, SETUP_DURATION, view);
+            rotateView(ROTATION_90, ROTATION_90, SETUP_DURATION);
         } else if (isReverseLandscape(orientation)) {
-            rotateView(ROTATION_180, ROTATION_180, SETUP_DURATION, view);
+            rotateView(ROTATION_180, ROTATION_180, SETUP_DURATION);
         } else if (isLandscape(orientation)) {
-            rotateView(ROTATION_0, ROTATION_0, SETUP_DURATION, view);
+            rotateView(ROTATION_0, ROTATION_0, SETUP_DURATION);
         }
     }
 
-    private void rotate(int orientation, View view) {
+    private void rotate(int orientation) {
         if ((isPortrait(orientation)) && rotation != ROTATION_270) {
-            rotateView(rotation == ROTATION_0 ? ROTATION_360 : rotation, ROTATION_270, ROTATE_DURATION_MS, view);
+            rotateView(rotation == ROTATION_0 ? ROTATION_360 : rotation, ROTATION_270, ROTATE_DURATION_MS);
         } else if (isReversePortrait(orientation) && rotation != ROTATION_90) {
-            rotateView(rotation, ROTATION_90, ROTATE_DURATION_MS, view);
+            rotateView(rotation, ROTATION_90, ROTATE_DURATION_MS);
         } else if (isReverseLandscape(orientation) && rotation != ROTATION_180) {
-            rotateView(rotation, ROTATION_180, ROTATE_DURATION_MS, view);
+            rotateView(rotation, ROTATION_180, ROTATE_DURATION_MS);
         } else if (isLandscape(orientation) && rotation != ROTATION_0) {
-            rotateView(rotation, rotation == ROTATION_270 ? ROTATION_360 : ROTATION_0, ROTATE_DURATION_MS, view);
+            rotateView(rotation, rotation == ROTATION_270 ? ROTATION_360 : ROTATION_0, ROTATE_DURATION_MS);
             rotation = ROTATION_0;
         }
     }
@@ -81,12 +79,14 @@ public class ButtonsOrientationListener extends OrientationEventListener {
         return orientation < 35 || orientation > 325;
     }
 
-    private void rotateView(int from, int to, int duration, View view) {
+    private void rotateView(int from, int to, int duration) {
         rotation = to;
 
         RotateAnimation animation = new RotateAnimation(from, to, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setDuration(duration);
         animation.setFillAfter(true);
-        view.startAnimation(animation);
+        for (View view : views) {
+            view.startAnimation(animation);
+        }
     }
 }
