@@ -1,8 +1,8 @@
 package com.h.cam;
 
-import android.content.Context;
+import android.app.Activity;
 import android.hardware.Camera;
-import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -13,10 +13,11 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     private Camera camera;
     private SurfaceHolder surfaceHolder;
+    private Activity a;
 
-    public Preview(Context context) {
+    public Preview(Activity context) {
         super(context);
-
+a = context;
         setUpCamera();
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
@@ -24,14 +25,25 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void setUpCamera() {
-        camera = Camera.open();
+        camera = Camera.open(0);
         Camera.Parameters params = camera.getParameters();
         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
         List<Camera.Size> previewSizes = params.getSupportedPreviewSizes();
+        List<Camera.Size> pictureSizes = params.getSupportedPictureSizes();
         System.out.println("preview sizes: " + previewSizes);
         for (Camera.Size a : previewSizes) {
-            System.out.println(a.width + "x" + a.height);
+            System.out.println(a.width + "x" + a.height + "(" + ((float)a.height / a.width) + ")");
         }
+
+        System.out.println("picture sizes: " + previewSizes);
+        for (Camera.Size a : pictureSizes) {
+            System.out.println(a.width + "x" + a.height + "(" + ((float)a.height / a.width) + ")");
+        }
+
+        System.out.println("preview size: " + params.getPreviewSize().width + "x" + params.getPreviewSize().height);
+        System.out.println("picture size: " + params.getPictureSize().width + "x" + params.getPictureSize().height);
+
+//        params.setPictureSize(4128, 2322);
 //            params.setPreviewSize(640, 480);
         camera.setParameters(params);
     }
@@ -39,7 +51,6 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            System.out.println("wlazlo");
             camera.setPreviewDisplay(holder);
             camera.startPreview();
         } catch (IOException e) {
@@ -49,9 +60,8 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-// If your preview can change or rotate, take care of those events here.
-        // Make sure to stop the preview before resizing or reformatting it.
-        System.out.println("wlazlo2");
+
+//            setCameraDisplayOrientation(a,0,camera);
         if (surfaceHolder.getSurface() == null){
             // preview surface does not exist
             return;
@@ -70,11 +80,10 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback {
         // start preview with new settings
         try {
             camera.setPreviewDisplay(surfaceHolder);
-//            camera.setPreviewCallback(this);
             camera.startPreview();
 
         } catch (Exception e){
-            Log.d("ERROR", "Error starting camera preview: " + e.getMessage());
+            System.out.println("fail");
         }
     }
 

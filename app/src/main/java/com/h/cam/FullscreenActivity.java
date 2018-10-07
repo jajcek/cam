@@ -11,6 +11,7 @@ public class FullscreenActivity extends Activity {
 
     private final Permissions permissions = new Permissions(this);
     private Preview preview;
+    private ButtonsOrientationListener buttonsOrientationListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +44,10 @@ public class FullscreenActivity extends Activity {
         FrameLayout previewFrame = findViewById(R.id.preview);
         preview = new Preview(this);
         previewFrame.addView(preview);
+
+        buttonsOrientationListener = new ButtonsOrientationListener(this);
+        buttonsOrientationListener.addView(findViewById(R.id.imageButton1));
+        buttonsOrientationListener.enable();
     }
 
     private boolean checkIfAllGranted(int[] grantResults) {
@@ -54,6 +59,7 @@ public class FullscreenActivity extends Activity {
 
     @Override
     protected void onPause() {
+        buttonsOrientationListener.disable();
         if (preview != null) {
             preview.release();
             preview = null;

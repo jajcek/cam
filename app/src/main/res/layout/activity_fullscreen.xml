@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#0099cc">
@@ -7,16 +8,27 @@
     <FrameLayout
         android:id="@+id/preview"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-    />
+        android:layout_height="fill_parent" >
 
-        <Button
-            android:id="@+id/dummy_button"
-            style="?metaButtonBarButtonStyle"
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/imageButton1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/dummy_button" />
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/pic"
+            android:cropToPadding="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/camera" />
+    </LinearLayout>
 
 
 </FrameLayout>
