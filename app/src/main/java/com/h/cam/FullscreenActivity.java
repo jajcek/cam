@@ -1,11 +1,17 @@
 package com.h.cam;
 
 import android.app.Activity;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
@@ -20,7 +26,9 @@ public class FullscreenActivity extends Activity {
     private Preview preview;
     private ButtonsOrientationListener buttonsOrientationListener;
 
-    static{OpenCVLoader.initDebug();}
+    static {
+        OpenCVLoader.initDebug();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +62,7 @@ public class FullscreenActivity extends Activity {
         preview = new Preview(this);
         previewFrame.addView(preview);
 
-        prepareButtons();
+        prepareButtons(preview.getCamera());
 
         FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
         DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);;
@@ -62,12 +70,12 @@ public class FullscreenActivity extends Activity {
         System.out.println(detector);
     }
 
-    private void prepareButtons() {
+    private void prepareButtons(Camera camera) {
         buttonsOrientationListener = new ButtonsOrientationListener(this);
         buttonsOrientationListener.addView(findViewById(R.id.imageButton3));
 
         View takePhotoButton = findViewById(R.id.imageButton1);
-        takePhotoButton.setOnClickListener(new PhotoTaker());
+        takePhotoButton.setOnClickListener(new PhotoTaker(getApplicationContext(), camera, (ImageView) findViewById(R.id.imageButton123)));
         buttonsOrientationListener.addView(takePhotoButton);
 
         buttonsOrientationListener.enable();

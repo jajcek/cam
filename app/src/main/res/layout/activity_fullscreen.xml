@@ -9,7 +9,6 @@
         android:id="@+id/preview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
-
     </FrameLayout>
 
     <LinearLayout
@@ -32,6 +31,17 @@
 
         <ImageButton
             android:id="@+id/imageButton1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/pic"
+            android:cropToPadding="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/camera" />
+
+        <ImageView
+            android:id="@+id/imageButton123"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

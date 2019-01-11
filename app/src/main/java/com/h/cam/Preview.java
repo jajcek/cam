@@ -23,6 +23,10 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback, Came
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
+    public Camera getCamera() {
+        return camera;
+    }
+
     private void setUpCamera() {
         camera = Camera.open(0);
         Camera.Parameters params = camera.getParameters();
@@ -43,6 +47,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback, Came
         System.out.println("picture size: " + params.getPictureSize().width + "x" + params.getPictureSize().height);
 
 //        params.setPictureSize(4128, 2322);
+        params.setPictureSize(3264, 1836);
 //            params.setPreviewSize(640, 480);
         camera.setParameters(params);
     }
