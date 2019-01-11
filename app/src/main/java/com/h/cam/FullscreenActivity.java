@@ -4,14 +4,23 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.features2d.DescriptorExtractor;
+import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FeatureDetector;
 
 public class FullscreenActivity extends Activity {
 
     private final Permissions permissions = new Permissions(this);
     private Preview preview;
     private ButtonsOrientationListener buttonsOrientationListener;
+
+    static{OpenCVLoader.initDebug();}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +54,22 @@ public class FullscreenActivity extends Activity {
         preview = new Preview(this);
         previewFrame.addView(preview);
 
+        prepareButtons();
+
+        FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
+        DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);;
+        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
+        System.out.println(detector);
+    }
+
+    private void prepareButtons() {
         buttonsOrientationListener = new ButtonsOrientationListener(this);
         buttonsOrientationListener.addView(findViewById(R.id.imageButton3));
-        buttonsOrientationListener.addView(findViewById(R.id.imageButton1));
+
+        View takePhotoButton = findViewById(R.id.imageButton1);
+        takePhotoButton.setOnClickListener(new PhotoTaker());
+        buttonsOrientationListener.addView(takePhotoButton);
+
         buttonsOrientationListener.enable();
     }
 

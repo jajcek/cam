@@ -9,15 +9,14 @@ import android.view.SurfaceView;
 import java.io.IOException;
 import java.util.List;
 
-public class Preview extends SurfaceView implements SurfaceHolder.Callback {
+public class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private Camera camera;
     private SurfaceHolder surfaceHolder;
-    private Activity a;
 
     public Preview(Activity context) {
         super(context);
-a = context;
+
         setUpCamera();
         surfaceHolder = getHolder();
         surfaceHolder.addCallback(this);
@@ -52,6 +51,7 @@ a = context;
     public void surfaceCreated(SurfaceHolder holder) {
         try {
             camera.setPreviewDisplay(holder);
+            camera.setPreviewCallback(this);
             camera.startPreview();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -60,36 +60,52 @@ a = context;
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-//            setCameraDisplayOrientation(a,0,camera);
-        if (surfaceHolder.getSurface() == null){
-            // preview surface does not exist
-            return;
-        }
-
-        // stop preview before making changes
-        try {
-            camera.stopPreview();
-        } catch (Exception e){
-            // ignore: tried to stop a non-existent preview
-        }
-
-        // set preview size and make any resize, rotate or
-        // reformatting changes here
-
-        // start preview with new settings
-        try {
-            camera.setPreviewDisplay(surfaceHolder);
-            camera.startPreview();
-
-        } catch (Exception e){
-            System.out.println("fail");
-        }
     }
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+    }
 
+    @Override
+    public void onPreviewFrame(byte[] data, Camera camera) {
+//        System.out.println("wlazlo");
+//        System.out.println(a++);
+//        int[] pixels = new int[1280*720];
+//        decodeYUV420SP(pixels, data, 1280, 720);
+//        System.out.println("color: " + String.format("#%06X", (0xFFFFFF & pixels[0])));
+    }
+
+    //Method from Ketai project! Not mine! See below...
+    void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
+
+        final int frameSize = width * height;
+
+        for (int j = 0, yp = 0; j < height; j++) {
+            int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
+            for (int i = 0; i < width; i++, yp++) {
+                int y = (0xff & ((int) yuv420sp[yp])) - 16;
+                if (y < 0)
+                    y = 0;
+                if ((i & 1) == 0) {
+                    v = (0xff & yuv420sp[uvp++]) - 128;
+                    u = (0xff & yuv420sp[uvp++]) - 128;
+                }
+
+                int y1192 = 1192 * y;
+                int r = (y1192 + 1634 * v);
+                int g = (y1192 - 833 * v - 400 * u);
+                int b = (y1192 + 2066 * u);
+
+                if (r < 0)                  r = 0;               else if (r > 262143)
+                    r = 262143;
+                if (g < 0)                  g = 0;               else if (g > 262143)
+                    g = 262143;
+                if (b < 0)                  b = 0;               else if (b > 262143)
+                    b = 262143;
+
+                rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
+            }
+        }
     }
 
     public void release() {
