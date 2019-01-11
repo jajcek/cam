@@ -58,16 +58,9 @@ public class FullscreenActivity extends Activity {
     }
 
     private void runPreview() {
-        FrameLayout previewFrame = findViewById(R.id.preview);
-        preview = new Preview(this);
-        previewFrame.addView(preview);
+        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface));
 
         prepareButtons(preview.getCamera());
-
-        FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
-        DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);;
-        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
-        System.out.println(detector);
     }
 
     private void prepareButtons(Camera camera) {

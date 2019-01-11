@@ -5,20 +5,19 @@ import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 
 import java.io.IOException;
 import java.util.List;
 
-public class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private Camera camera;
     private SurfaceHolder surfaceHolder;
 
-    public Preview(Activity context) {
-        super(context);
-
+    public Preview(SurfaceView viewById) {
         setUpCamera();
-        surfaceHolder = getHolder();
+        surfaceHolder = viewById.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
