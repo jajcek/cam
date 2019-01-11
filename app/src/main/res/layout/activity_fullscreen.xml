@@ -11,6 +11,11 @@
         android:layout_height="fill_parent" >
 
         <SurfaceView
+            android:id="@+id/hintSurface"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <SurfaceView
             android:id="@+id/previewSurface"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
