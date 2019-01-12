@@ -29,27 +29,29 @@ import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE;
 import static android.provider.MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO;
 
 public class PhotoTaker implements View.OnClickListener, Camera.PictureCallback {
-    private Camera camera;
+    private Preview preview;
     private Context applicationContext;
     private ImageView imageView;
 
-    public PhotoTaker(Context applicationContext, Camera camera, ImageView imageView) {
+    public PhotoTaker(Context applicationContext, Preview preview, ImageView imageView) {
         this.applicationContext = applicationContext;
-        this.camera = camera;
+        this.preview = preview;
         this.imageView = imageView;
     }
 
     @Override
     public void onClick(View v) {
-        camera.takePicture(null, null, this);
+        preview.getCamera().takePicture(null, null, this);
     }
 
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         Mat mat = new Mat();
         Bitmap a = BitmapFactory.decodeByteArray(data, 0, data.length);
-        Bitmap bmp32 = a.copy(Bitmap.Config.ARGB_8888, true);
-        Utils.bitmapToMat(bmp32, mat);
+//        Bitmap bmp32 = a.copy(Bitmap.Config.ARGB_8888, true);
+        Utils.bitmapToMat(a, mat);
+
+        preview.setPatternImage(mat);
 
         Bitmap fromMat = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, fromMat);

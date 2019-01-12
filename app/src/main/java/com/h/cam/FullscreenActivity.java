@@ -61,17 +61,17 @@ public class FullscreenActivity extends Activity {
     }
 
     private void runPreview() {
-        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface), (SurfaceView) findViewById(R.id.hintSurface));
+        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface), (SurfaceView) findViewById(R.id.hintSurface), (ImageView) findViewById(R.id.imageButton123));
 
-        prepareButtons(preview.getCamera());
+        prepareButtons();
     }
 
-    private void prepareButtons(Camera camera) {
+    private void prepareButtons() {
         buttonsOrientationListener = new ButtonsOrientationListener(this);
         buttonsOrientationListener.addView(findViewById(R.id.imageButton3));
 
         View takePhotoButton = findViewById(R.id.imageButton1);
-        takePhotoButton.setOnClickListener(new PhotoTaker(getApplicationContext(), camera, (ImageView) findViewById(R.id.imageButton123)));
+        takePhotoButton.setOnClickListener(new PhotoTaker(getApplicationContext(), preview, (ImageView) findViewById(R.id.imageButton123)));
         buttonsOrientationListener.addView(takePhotoButton);
 
         buttonsOrientationListener.enable();
