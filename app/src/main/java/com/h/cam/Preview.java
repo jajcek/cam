@@ -1,12 +1,18 @@
 package com.h.cam;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -14,12 +20,15 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private Camera camera;
     private SurfaceHolder surfaceHolder;
+    private HintSurface hintSurface;
 
-    public Preview(SurfaceView viewById) {
+    public Preview(SurfaceView previewSurface, SurfaceView hintSurfaceView) {
         setUpCamera();
-        surfaceHolder = viewById.getHolder();
+        surfaceHolder = previewSurface.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
+        hintSurface = new HintSurface(hintSurfaceView);
     }
 
     public Camera getCamera() {
@@ -47,7 +56,7 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
 //        params.setPictureSize(4128, 2322);
         params.setPictureSize(3264, 1836);
-//            params.setPreviewSize(640, 480);
+            params.setPreviewSize(640, 480);
         camera.setParameters(params);
     }
 
@@ -74,9 +83,18 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
     public void onPreviewFrame(byte[] data, Camera camera) {
 //        System.out.println("wlazlo");
 //        System.out.println(a++);
-//        int[] pixels = new int[1280*720];
-//        decodeYUV420SP(pixels, data, 1280, 720);
+//        int[] pixels = new int[640*480];
+//        decodeYUV420SP(pixels, data, 640, 480);
 //        System.out.println("color: " + String.format("#%06X", (0xFFFFFF & pixels[0])));
+        Camera.Parameters parameters = camera.getParameters();
+        int width = parameters.getPreviewSize().width;
+        int height = parameters.getPreviewSize().height;
+        ByteArrayOutputStream outstr = new ByteArrayOutputStream();
+        Rect rect = new Rect(0, 0, width, height);
+        YuvImage yuvimage=new YuvImage(data,ImageFormat.NV21,width,height,null);
+        yuvimage.compressToJpeg(rect, 100, outstr);
+        Bitmap bmp = BitmapFactory.decodeByteArray(outstr.toByteArray(), 0, outstr.size());
+        System.out.println(bmp.getPixel(0, 0));
     }
 
     //Method from Ketai project! Not mine! See below...

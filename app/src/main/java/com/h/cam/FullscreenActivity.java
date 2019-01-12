@@ -61,42 +61,7 @@ public class FullscreenActivity extends Activity {
     }
 
     private void runPreview() {
-        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface));
-
-        SurfaceView a = (SurfaceView) findViewById(R.id.hintSurface);
-
-
-        SurfaceHolder h = a.getHolder();
-        h.setFormat(PixelFormat.TRANSPARENT);
-        h.addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                paint.setTextSize(12);
-                paint.setColor(Color.RED);
-                paint.setStyle(Paint.Style.STROKE);
-                paint.setStrokeWidth(5);
-
-                Path p = new Path();
-                p.moveTo(0, 0);
-                Canvas c = holder.lockCanvas();
-                c.save();
-                p.lineTo(200, 200);
-                c.drawRect(0, 0, 200, 200, paint);
-                c.restore();
-                holder.unlockCanvasAndPost(c);
-            }
-
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-            }
-
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-
-            }
-        });
+        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface), (SurfaceView) findViewById(R.id.hintSurface));
 
         prepareButtons(preview.getCamera());
     }
