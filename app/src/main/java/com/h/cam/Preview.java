@@ -1,22 +1,13 @@
 package com.h.cam;
 
-import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.hardware.Camera;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.ImageView;
 
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.DMatch;
+import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
@@ -28,13 +19,14 @@ import org.opencv.features2d.DescriptorMatcher;
 import org.opencv.features2d.FeatureDetector;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
-public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, CameraBridgeViewBase.CvCameraViewListener2 {
+public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
+
+    private static final int COMP_WIDTH = 320;
+    private static final int COMP_HEIGHT = 180;
 
     private Camera camera;
     private SurfaceHolder surfaceHolder;
@@ -43,7 +35,6 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
     private ImageView viewById;
 
     public Preview(SurfaceView previewSurface, SurfaceView hintSurfaceView, ImageView viewById) {
-        setUpCamera();
         surfaceHolder = previewSurface.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -84,6 +75,8 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
+            setUpCamera();
+
             camera.setPreviewDisplay(holder);
             camera.setPreviewCallback(this);
             camera.startPreview();
@@ -98,7 +91,10 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        System.out.println("preview surface destroyed");
         if (camera != null) {
+            camera.stopPreview();
+            camera.setPreviewCallback(this);
             camera.release();
             camera = null;
         }
@@ -106,46 +102,24 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-//        System.out.println("wlazlo");
-//        System.out.println(a++);
-//        int[] pixels = new int[640*480];
-//        decodeYUV420SP(pixels, data, 640, 480);
-//        System.out.println("color: " + String.format("#%06X", (0xFFFFFF & pixels[0])));
         if (patternImage == null) return;
 
         Camera.Parameters parameters = camera.getParameters();
         int width = parameters.getPreviewSize().width;
         int height = parameters.getPreviewSize().height;
-//        ByteArrayOutputStream outstr = new ByteArrayOutputStream();
-//        Rect rect = new Rect(0, 0, width, height);
-//        YuvImage yuvimage=new YuvImage(data,ImageFormat.NV21,width,height,null);
-//        yuvimage.compressToJpeg(rect, 100, outstr);
-//        Bitmap bmp = BitmapFactory.decodeByteArray(outstr.toByteArray(), 0, outstr.size());
 
-        Mat yuv = new Mat(height+height/2,width, CvType.CV_8UC1);//height, width, CvType.CV_8UC1
-        Mat previewImage = new Mat();//height, width, CvType.CV_8UC4
+        Mat yuv = new Mat(height+height/2,width, CvType.CV_8UC1);
+        Mat previewImage = new Mat();
 
         yuv.put(0, 0, data);
         Imgproc.cvtColor(yuv, previewImage, Imgproc.COLOR_YUV2RGBA_NV21);
-        // --
-        Bitmap fromMat = Bitmap.createBitmap(previewImage.cols(), previewImage.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(previewImage, fromMat);
 
-        viewById.setImageBitmap(fromMat);
-        // --
-//        Imgproc.cvtColor(mRgba, mRgba, Imgproc.COLOR_BGR2GRAY);
-//        mRgba.put(0, 0, data);
-
-//        Mat previewImage = new Mat();
-//        Utils.bitmapToMat(bmp, previewImage);
         Mat previewImageResized = new Mat();
-        Size sz = new Size(160,90);
+        Size sz = new Size(COMP_WIDTH,COMP_HEIGHT);
         Imgproc.resize( previewImage, previewImageResized, sz );
-//        System.out.println(bmp.getPixel(0, 0));
-
 
         FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
-        DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);;
+        DescriptorExtractor descriptor = DescriptorExtractor.create(DescriptorExtractor.ORB);
         DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
 
         // First photo
@@ -183,21 +157,16 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
                 max_dist = dist;
         }
 
-        LinkedList<DMatch> good_matches = new LinkedList<DMatch>();
-//        for(KeyPoint a : keypoints1.toList()) {
-//            System.out.println(a);
-//        }
+        List<KeyPoint> keyPoints = keypoints1.toList();
+        List<KeyPoint> keyPoints1 = keypoints2.toList();
 
         List<Point> points = new ArrayList<>();
         for(int i = 0;i < matchesList.size(); i++){
-            if (matchesList.get(i).distance <= (4 * min_dist)) {
-//                System.out.println("// ---");
-                good_matches.addLast(matchesList.get(i));
-                Point p1 = keypoints1.toList().get(matchesList.get(i).queryIdx).pt;
-                Point p2 = keypoints2.toList().get(matchesList.get(i).trainIdx).pt;
+            if (matchesList.get(i).distance <= min_dist) {
+                Point p1 = keyPoints.get(matchesList.get(i).queryIdx).pt;
+                Point p2 = keyPoints1.get(matchesList.get(i).trainIdx).pt;
                 Point p3 = new Point(p1.x - p2.x, p1.y - p2.y);
                 points.add(p3);
-//                System.out.println(p3);
             }
         }
 
@@ -205,14 +174,15 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
         for (Point point : points) {
             a = new Point(a.x + point.x, a.y + point.y);
         }
-        Point p3 = new Point((a.x / points.size())*(1280/160), (a.y / points.size())*(720/90));
+        Point p3 = new Point((a.x / points.size())*(1280/COMP_WIDTH), (a.y / points.size())*(720/COMP_HEIGHT));
         System.out.println(p3);
+        System.out.println("keypoints: " + points.size());
 
         hintSurface.drawHint(p3);
-//        patternImage = null;
     }
 
     public void release() {
+        System.out.println("relace in preview");
         patternImage = null;
 
         if (camera != null) {
@@ -223,24 +193,8 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, 
 
     public void setPatternImage(Mat patternImage) {
         Mat resizeimage = new Mat();
-        Size sz = new Size(160,90);
+        Size sz = new Size(COMP_WIDTH, COMP_HEIGHT);
         Imgproc.resize( patternImage, resizeimage, sz );
         this.patternImage = resizeimage;
-    }
-
-    @Override
-    public void onCameraViewStarted(int width, int height) {
-
-    }
-
-    @Override
-    public void onCameraViewStopped() {
-
-    }
-
-    @Override
-    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        System.out.println("wlazlo");
-        return null;
     }
 }

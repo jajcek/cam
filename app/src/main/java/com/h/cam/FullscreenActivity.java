@@ -1,27 +1,15 @@
 package com.h.cam;
 
 import android.app.Activity;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.PixelFormat;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
-import org.opencv.features2d.DescriptorExtractor;
-import org.opencv.features2d.DescriptorMatcher;
-import org.opencv.features2d.FeatureDetector;
 
 public class FullscreenActivity extends Activity {
 
@@ -86,6 +74,7 @@ public class FullscreenActivity extends Activity {
 
     @Override
     protected void onPause() {
+        System.out.println("fulscreen activity onpause");
         buttonsOrientationListener.disable();
         if (preview != null) {
             preview.release();
