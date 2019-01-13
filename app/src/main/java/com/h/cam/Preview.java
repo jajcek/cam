@@ -1,10 +1,16 @@
 package com.h.cam;
 
+import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
 
+import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import org.opencv.core.DMatch;
 import org.opencv.core.KeyPoint;
@@ -23,7 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
+public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.PictureCallback {
 
     private static final int COMP_WIDTH = 320;
     private static final int COMP_HEIGHT = 180;
@@ -32,13 +38,15 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
     private SurfaceHolder surfaceHolder;
     private HintSurface hintSurface;
     private Mat patternImage;
-    private ImageView viewById;
+    private ImageView imageView;
+    private Activity activity;
 
-    public Preview(SurfaceView previewSurface, SurfaceView hintSurfaceView, ImageView viewById) {
+    public Preview(SurfaceView previewSurface, SurfaceView hintSurfaceView, Activity a, ImageView imageView) {
         surfaceHolder = previewSurface.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        this.viewById = viewById;
+        this.activity = a;
+        this.imageView = imageView;
 
         hintSurface = new HintSurface(hintSurfaceView);
     }
@@ -75,13 +83,99 @@ public class Preview implements SurfaceHolder.Callback, Camera.PreviewCallback {
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
-            setUpCamera();
+            newOpenCamera();
 
             camera.setPreviewDisplay(holder);
             camera.setPreviewCallback(this);
             camera.startPreview();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void newOpenCamera() {
+        if (mThread == null) {
+            mThread = new CameraHandlerThread();
+        }
+
+        synchronized (mThread) {
+            mThread.openCamera();
+        }
+    }
+    private CameraHandlerThread mThread = null;
+
+    @Override
+    public void onPictureTaken(byte[] data, Camera camera) {
+        Mat mat = new Mat();
+        Bitmap a = BitmapFactory.decodeByteArray(data, 0, data.length);
+//        Bitmap bmp32 = a.copy(Bitmap.Config.ARGB_8888, true);
+        Utils.bitmapToMat(a, mat);
+
+        setPatternImage(mat);
+
+//        final Bitmap fromMat = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
+//        Utils.matToBitmap(mat, fromMat);
+//
+//        activity.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                imageView.setImageBitmap(fromMat);
+//            }
+//        });
+
+//        File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+//        System.out.println("pictureFile: " + pictureFile.getAbsolutePath());
+//        if (pictureFile == null){
+//            Log.d("ERROR", "Error creating media file, check storage permissions");
+//            return;
+//        }
+//
+//        try {
+//            FileOutputStream fos = new FileOutputStream(pictureFile);
+//            fos.write(data);
+//            fos.close();
+//        } catch (FileNotFoundException e) {
+//            Log.d("ERROR", "File not found: " + e.getMessage());
+//        } catch (IOException e) {
+//            Log.d("ERROR", "Error accessing file: " + e.getMessage());
+//        }
+//
+//        scanFile(applicationContext, pictureFile, null);
+
+        camera.startPreview();
+    }
+
+    public void changeToHintMode() {
+        camera.takePicture(null, null, this);
+    }
+
+    private class CameraHandlerThread extends HandlerThread {
+        Handler mHandler = null;
+
+        CameraHandlerThread() {
+            super("CameraHandlerThread");
+            start();
+            mHandler = new Handler(getLooper());
+        }
+
+        synchronized void notifyCameraOpened() {
+            notify();
+        }
+
+        void openCamera() {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    setUpCamera();
+                    notifyCameraOpened();
+                }
+            });
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {
+                System.out.println("wait was interrupted");
+            }
         }
     }
 

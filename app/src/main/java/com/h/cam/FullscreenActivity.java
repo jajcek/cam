@@ -49,7 +49,7 @@ public class FullscreenActivity extends Activity {
     }
 
     private void runPreview() {
-        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface), (SurfaceView) findViewById(R.id.hintSurface), (ImageView) findViewById(R.id.imageButton123));
+        preview = new Preview((SurfaceView) findViewById(R.id.previewSurface), (SurfaceView) findViewById(R.id.hintSurface), this, (ImageView) findViewById(R.id.imageButton123));
 
         prepareButtons();
     }
@@ -59,7 +59,12 @@ public class FullscreenActivity extends Activity {
         buttonsOrientationListener.addView(findViewById(R.id.imageButton3));
 
         View takePhotoButton = findViewById(R.id.imageButton1);
-        takePhotoButton.setOnClickListener(new PhotoTaker(getApplicationContext(), preview, (ImageView) findViewById(R.id.imageButton123)));
+        takePhotoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                preview.changeToHintMode();
+            }
+        });
         buttonsOrientationListener.addView(takePhotoButton);
 
         buttonsOrientationListener.enable();
